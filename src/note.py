@@ -2,6 +2,7 @@ from collections import UserDict
 from datetime import datetime
 from csv import DictReader, DictWriter
 import re
+import os
 
 
 class Field:
@@ -40,12 +41,15 @@ class Record:
     def add_tag(self, tags):
         if isinstance(tags, list):
             for t in tags:
-                self.tag.append(Tag(t))
-        elif isinstance(tags, str) and len(tags.split(",")) > 1:
-            for t in tags.split(","):
-                self.tag.append(Tag(t))
+                if t not in [t.text for t in self.tag]:
+                    self.tag.append(Tag(t))
+        elif isinstance(tags, str) and len(re.findall(r"#\w+", tags)) > 1:
+            for t in re.findall(r"#\w+", tags):
+                if t not in [t.text for t in self.tag]:
+                    self.tag.append(Tag(t))
         else:
-            self.tag.append(Tag(tags))
+            if tags not in [t.text for t in self.tag]:
+                self.tag.append(Tag(tags))
 
     def add_note(self, note):
         if len(note) <= 256:
@@ -55,6 +59,9 @@ class Record:
 
     def edit_note(self, new_note):
         self.add_note(new_note)
+
+    def edit_title(self, new_title):
+        self.add_title(new_title)
 
     def create_record(self, text):
         self.add_title(self.find_title_in_text(text))
@@ -109,7 +116,8 @@ class Record:
 
 class NoteData(UserDict):
     def add_record(self, note):
-        self.data[note.title.text] = note
+        if note.title.text not in self.data:
+            self.data[note.title.text] = note
 
     def delete(self, note_name):
         if note_name in self.data:
@@ -123,6 +131,16 @@ class NoteData(UserDict):
                 for note in self.data:
                     if word == self.data[note].date.split(" ")[0]:
                         result.append(self.data[note])
+                return result
+            elif re.match(r"#\w+", word):
+                for note in self.data:
+                    tag_find = re.findall(
+                        pattern, " ".join(p.text.lower() for p in self.data[note].tag)
+                    )
+                    if len(tag_find) > 0:
+                        result.append(self.data[note])
+                    else:
+                        continue
                 return result
             else:
                 for note in self.data:
@@ -168,7 +186,9 @@ class NoteData(UserDict):
                 note_list.append(note_dict)
         return note_list
 
-    def red_csv_file(self, file):
+    def read_csv_file(self, file):
+        script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-1])
+        file = os.path.join(script_dir, f"db\\{file}")
         with open(file, "r") as f:
             dict_reader = DictReader(f, delimiter=";")
             note_data = list(dict_reader)
@@ -199,6 +219,8 @@ class NoteData(UserDict):
                 self.add_record(record)
 
     def write_csv_file(self, file):
+        script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-1])
+        file = os.path.join(script_dir, f"db\\{file}")
         field_names = ["title", "note", "tag", "date"]
         users_list = self.to_dict()
         with open(file, "w") as csvfile:
@@ -209,15 +231,17 @@ class NoteData(UserDict):
 
 if __name__ == "__main__":
     notebook = NoteData()
-    notebook.red_csv_file("fake_note.csv")
+    notebook.read_csv_file("fake_note.csv")
     first_notation = Record()
     first_notation.add_title("ЗДАЧА ПРОЕКТУ ПО ГІДРОДИНАМІЦІ")
     first_notation.add_note(
         "Треба виконати проект по темі “……..“ Попередній захист в 4 корпусі 201 кабінет……"
     )
     first_notation.add_tag("#ЛАБА, #20БАЛІВ")
+    first_notation.add_tag("#ЛАБА #20БАЛІВ")
     first_notation.add_tag("#ПАХТ")
-    print(first_notation.date)
+    notebook.add_record(first_notation)
+    #    print(first_notation)
 
     first_notation = Record()
     first_notation.create_record(
@@ -227,6 +251,15 @@ if __name__ == "__main__":
                                  Preliminary defense in the 4th building, room 201..."""
     )
     notebook.add_record(first_notation)
+    
+    some_notataion = Record()
+    some_notataion.create_record(
+        """
+                                 PROJECT SUBMISSION FOR HYDRODYNAMICS #PAKHT, #LABA, #20POINTS 
+                                 It is necessary to complete a project on the topic "......" 
+                                 Preliminary defense in the 4th building, room 201..."""
+    )
+    notebook.add_record(some_notataion)
 
     #    print(first_notation)
 
@@ -247,9 +280,9 @@ if __name__ == "__main__":
     for r in second_find:
         print(str(r))
 
-    first_notation.edit_note(
-        "It is necessary to complete"
-    )
+    first_notation.edit_note("It is necessary to complete")
+    print(first_notation)
+    first_notation.edit_title("something")
     print(first_notation)
 
     notebook.add_record(first_notation)
@@ -263,4 +296,4 @@ if __name__ == "__main__":
     for name, record in notebook.data.items():
         print(str(record) + "\n")
 
-    notebook.write_csv_file("fake_note.csv")
+#    notebook.write_csv_file("db\fake_note.csv")
