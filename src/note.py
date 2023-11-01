@@ -28,12 +28,25 @@ class Notation(Field):
         self.text = title
 
 
+class ID(Field):
+    def __init__(self, id):
+        self.text = str(id)
+
+
 class Record:
+    current_id = 1
+
     def __init__(self):
         self.title = None
         self.tag = []
         self.note = None
         self.date = datetime.now().strftime("%d.%m.%Y %H:%M")
+        self.id = ID(id)
+        Record.current_id += 1        
+        
+    def add_id(self, id):
+        self.id = ID(id)
+        
 
     def add_title(self, title):
         self.title = Title(title)
@@ -62,6 +75,16 @@ class Record:
 
     def edit_title(self, new_title):
         self.add_title(new_title)
+
+    def edit_tag(self, old_tag, new_tag):
+        for tag in self.tag:
+            if tag.text == old_tag:
+                tag.text = new_tag
+
+    def del_tag(self, tag_to_delete):
+        for tag in self.tag:
+            if tag.text == tag_to_delete:
+                self.tag.remove(tag)
 
     def create_record(self, text):
         self.add_title(self.find_title_in_text(text))
@@ -97,27 +120,28 @@ class Record:
             return []
 
     def __str__(self) -> str:
-        message = ("-" * 148) + "\n"
+        message = ("-" * 103) + "\n"
         if self.title:
-            message += "|{:<15}|{:<130}|\n".format("Title", (self.title.text))
-            message += ("-" * 148) + "\n"
+            message += "|{:<15}|{:<85}|\n".format("Title", (self.title.text))
+            message += ("-" * 103) + "\n"
         if self.note:
-            message += "|{:<15}|{:<130}|\n".format("Notice", (self.note.text))
-            message += ("-" * 148) + "\n"
+            message += "|{:<15}|{:<85}|\n".format("Notice", (self.note.text))
+            message += ("-" * 103) + "\n"
         if self.tag:
-            message += "|{:<15}|{:<130}|\n".format(
+            message += "|{:<15}|{:<85}|\n".format(
                 "Tags", (" ".join(t.text for t in self.tag))
             )
-        message += ("-" * 148) + "\n"
-        message += "|{:<15}|{:<130}|\n".format("Date", (self.date))
-        message += ("-" * 148) + "\n"
+        message += ("-" * 103) + "\n"
+        message += "|{:<15}|{:<85}|\n".format("Date", (self.date))
+        message += ("-" * 103) + "\n"
+        message += "|{:<15}|{:<85}|\n".format("ID", (self.id.text))
+        message += ("-" * 103) + "\n"
         return message
 
 
 class NoteData(UserDict):
     def add_record(self, note):
-        if note.title.text not in self.data:
-            self.data[note.title.text] = note
+        self.data[note.title.text] = note
 
     def delete(self, note_name):
         if note_name in self.data:
@@ -164,6 +188,13 @@ class NoteData(UserDict):
         else:
             raise ValueError("Search word schud have at least 3 characters")
 
+    def get_note_by_id(self, id):
+        for note in self.data:
+            if self.data[note].id.text == id:
+                result = self.data[note]
+                break
+        return result if result is not None else None
+
     def to_dict(self, obj=None):
         note_list = []
         if obj is None:
@@ -173,6 +204,7 @@ class NoteData(UserDict):
                     "tag": ", ".join(p.text for p in self.data[rec].tag),
                     "note": self.data[rec].note.text,
                     "date": self.data[rec].date,
+                    "id": self.data[rec].id.text,
                 }
                 note_list.append(note_dict)
         else:
@@ -182,6 +214,7 @@ class NoteData(UserDict):
                     "tag": ", ".join(p.text for p in rec.tag),
                     "note": rec.note.text,
                     "date": rec.date,
+                    "id": rec.id.text,
                 }
                 note_list.append(note_dict)
         return note_list
@@ -198,6 +231,8 @@ class NoteData(UserDict):
                 if key == "title":
                     record = Record()
                     record.add_title(value)
+                if key == "id":
+                    record.add_id(value)
                 elif key == "tag":
                     if len(value.split(",")) > 1:
                         for v in value.split(","):
@@ -221,7 +256,7 @@ class NoteData(UserDict):
     def write_csv_file(self, file):
         script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-1])
         file = os.path.join(script_dir, f"db\\{file}")
-        field_names = ["title", "note", "tag", "date"]
+        field_names = ["title", "note", "tag", "date", "id"]
         users_list = self.to_dict()
         with open(file, "w") as csvfile:
             writer = DictWriter(csvfile, fieldnames=field_names, delimiter=";")
@@ -230,28 +265,31 @@ class NoteData(UserDict):
 
 
 if __name__ == "__main__":
-    notebook = NoteData()
-    notebook.read_csv_file("fake_note.csv")
-    first_notation = Record()
-    first_notation.add_title("ЗДАЧА ПРОЕКТУ ПО ГІДРОДИНАМІЦІ")
-    first_notation.add_note(
-        "Треба виконати проект по темі “……..“ Попередній захист в 4 корпусі 201 кабінет……"
-    )
-    first_notation.add_tag("#ЛАБА, #20БАЛІВ")
-    first_notation.add_tag("#ЛАБА #20БАЛІВ")
-    first_notation.add_tag("#ПАХТ")
-    notebook.add_record(first_notation)
+    notebook = NoteData()  # create user dict object
+    notebook.read_csv_file("fake_note_1.csv")  # read csv data
+    first_notation = Record()  # create record object
+    first_notation.add_title("SOME TASK")  # add title to created object
+    first_notation.add_note("Some text")  # add note to creted object
+    first_notation.add_tag("#Lab, #20")  # add tags to object
+    first_notation.add_tag("#Lab #20")  # check that tags are not duplicated
+    first_notation.add_tag("#paht")  # add single tag
+    notebook.add_record(first_notation)  # add object to user dict
     #    print(first_notation)
 
+    # create another record object
     first_notation = Record()
+
+    # To create a record automatically with the title in uppercase,
+    # tags with only '#' symbols, and the note containing the rest of the text
     first_notation.create_record(
         """
                                  PROJECT SUBMISSION FOR HYDRODYNAMICS #PAKHT, #LABA, #20POINTS 
                                  It is necessary to complete a project on the topic "......" 
                                  Preliminary defense in the 4th building, room 201..."""
     )
-    notebook.add_record(first_notation)
-    
+    notebook.add_record(first_notation)  # add record to user dict
+
+    # To create a similar object with a different ID
     some_notataion = Record()
     some_notataion.create_record(
         """
@@ -261,39 +299,42 @@ if __name__ == "__main__":
     )
     notebook.add_record(some_notataion)
 
-    #    print(first_notation)
-
     second_notation = Record()
     second_notation.create_record(
         """LIST TO DO #koliu, #goit not so important 5463899"""
     )
     notebook.add_record(second_notation)
 
-    #    print(notebook.to_dict())
-    first_find = notebook.find_note("31.10.2023")
-    #    print(notebook.to_dict(first_find))
+    # To edit a record, the best and safest way is to find the record by its ID.
+    # If it is found, then it can be edited.
+    id_find = notebook.get_note_by_id("2")  #
+    print(id_find)
+    id_find.edit_note("something")
+    print(id_find)
+    id_find.edit_title("nothing")
+    print(id_find)
+    id_find.edit_tag("#window", "#ok")
+    print(id_find)
 
+    # Of course, it could be edited in another way by using a different search options,
+    # but you must be careful since such a search method may return a list.
+    print(notebook.find_note("Almost election."))
+    notebook.delete("Almost election.")  # delete the record
+    print(notebook.find_note("Almost election."))
     second_find = notebook.find_note("200")
-
-    dict_result = notebook.to_dict(second_find)
-
     for r in second_find:
         print(str(r))
 
-    first_notation.edit_note("It is necessary to complete")
-    print(first_notation)
-    first_notation.edit_title("something")
-    print(first_notation)
+    # returns all data as dict
+    dict_result = notebook.to_dict()
+    print(dict_result)
 
-    notebook.add_record(first_notation)
-    print(notebook.to_dict(first_find))
-
-    print(notebook.find_note("Almost election."))
-    notebook.delete("Almost election.")
-    print(notebook.find_note("Almost election."))
+    # it returns a dictionary created from the object.
+    dict_result = notebook.to_dict(second_find)
+    print(dict_result)
 
     print("Hier ist the full list: \n")
     for name, record in notebook.data.items():
         print(str(record) + "\n")
 
-#    notebook.write_csv_file("db\fake_note.csv")
+ #   notebook.write_csv_file("fake_note_1.csv")
