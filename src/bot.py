@@ -26,6 +26,10 @@ COMMANDS = WordCompleter(
     ignore_case=True,
 )
 
+# contacts = AddressBook()
+# notes = NotesBook()
+# fileManager = FileManager()
+
 
 def _parse_input(user_input):
     cmd, *args = user_input.split()
@@ -46,6 +50,8 @@ def _input_error(func):
 
 
 def close_bot():
+    # fileManager.save_contacts(contacts.data)
+    # fileManager.save_notes(notes.data)
     print("Good bye!")
 
 
@@ -61,12 +67,19 @@ def helpBot():
 @_input_error
 def add_contact(args):
     name, address, phone, email, birthday = args
+    # contacts.add_name(name)
+    # contacts.add_address(address)
+    # contacts.add_phone(phone)
+    # contacts.add_email(email)
+    # contacts.add_birthday(birthday)
     print(name, address, phone, email, birthday)
 
 
 @_input_error
 def change_contact(args):
     name, address, phone, email, birthday = args
+    # contacts.find(name)
+    # contacts.change_contact(address, phone, email, birthday)
     print(name, address, phone, email, birthday)
 
 
@@ -162,6 +175,9 @@ def sort_note_tag(args):
 
 
 def main():
+    # contacts.data = fileManager.read_contacts()
+    # notes.data = fileManager.read_notes()
+
     msg = "\n==============================\nWelcome to the assistant bot!\n\nI will help you with your student activity.\n==============================\n"
     print(msg)
 
