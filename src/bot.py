@@ -15,11 +15,11 @@ COMMANDS = WordCompleter(
         "find_contact name or address or phone or email or birthday(DD.MM.YYYY)",
         "contacts_birthdays days(int)",
         "find_notes TITLE or text or date",
-        "add_note TITLE text)",
+        "add_note TITLE text *your tags*",
         "delete_note TITLE",
         "change_note TITLE NEW_TITLE",
         "change_note TITLE new_text",
-        "add_note_tags *your tags*",
+        "add_note_tags TITLE *your tags*",
         "delete_note TITLE Tag",
         "change_note_tag tag new_tag",
         "find_note_tag *your tags*",
@@ -54,6 +54,7 @@ def _input_error(func):
 def close_bot():
     # fileManager.save_contacts(contacts.data)
     # fileManager.save_notes(notes.data)
+    notes.write_csv_file("data.csv")
     print("Good bye!")
 
 
@@ -121,13 +122,13 @@ def find_notes(args):
 
 @_input_error
 def add_note(args):
-    TITLE, text, tags = args
+    TITLE, text, *tags = args
     record = Record()
     record.add_title(TITLE)
     record.add_note(text)
     record.add_tag(tags)
     notes.add_record(record)
-    print(TITLE, text)
+    print(TITLE, text, *tags)
 
 
 @_input_error
@@ -161,7 +162,8 @@ def change_note_text(args):
 def add_note_tags(args):
     TITLE, *tags = args
 
-    # Code
+    note = notes.find_note(TITLE)
+    note.add_tag(tags)
 
     print(TITLE, *tags)
 
@@ -207,6 +209,7 @@ def sort_note_tag(args):
 def main():
     # contacts.data = fileManager.read_contacts()
     # notes.data = fileManager.read_notes()
+    notes.read_csv_file("data.csv")
 
     msg = "\n==============================\nWelcome to the assistant bot!\n\nI will help you with your student activity.\n==============================\n"
     print(msg)
