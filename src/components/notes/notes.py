@@ -214,8 +214,16 @@ class NoteData(UserDict):
                 break
         return result if result is not None else None
 
+    def sort_note_by_tag(self):
+        result = []
+        dict_data = self.to_dict()
+        for d in dict_data:
+            d["tag"] = [", ".join(p for p in d["tag"].split(","))]
+            result.append(d)
+        return result
+
     def to_dict(self, obj=None):
-        note_list = []
+        result = []
         if obj is None:
             for rec in self.data:
                 note_dict = {
@@ -225,8 +233,8 @@ class NoteData(UserDict):
                     "date": self.data[rec].date,
                     "id": self.data[rec].id.text,
                 }
-                note_list.append(note_dict)
-        else:
+                result.append(note_dict)
+        elif isinstance(obj, list):
             for rec in obj:
                 note_dict = {
                     "title": rec.title.text,
@@ -235,8 +243,17 @@ class NoteData(UserDict):
                     "date": rec.date,
                     "id": rec.id.text,
                 }
-                note_list.append(note_dict)
-        return note_list
+                result.append(note_dict)
+        else:
+            note_dict = {
+                "title": obj.title.text,
+                "tag": ", ".join(p.text for p in obj.tag),
+                "note": obj.note.text,
+                "date": obj.date,
+                "id": obj.id.text,
+            }
+            result.append(note_dict)
+        return result
 
     def read_csv_file(self, file):
         script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-3])
@@ -273,7 +290,7 @@ class NoteData(UserDict):
                 self.add_record(record)
 
     def write_csv_file(self, file):
-        script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-1])
+        script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-3])
         file = os.path.join(script_dir, f"db\\{file}")
         field_names = ["title", "note", "tag", "date", "id"]
         users_list = self.to_dict()
@@ -326,14 +343,18 @@ if __name__ == "__main__":
 
     # To edit a record, the best and safest way is to find the record by its ID.
     # If it is found, then it can be edited.
-    id_find = notebook.get_note_by_id("2")
-    print(id_find)
-    id_find.edit_note("something")
-    print(id_find)
-    id_find.edit_title("nothing")
-    print(id_find)
-    id_find.edit_tag("#window", "#ok")
-    print(id_find)
+    try:
+        id_find = notebook.get_note_by_id("2")
+        print(id_find)
+        id_find.edit_note("something")
+        print(id_find)
+        id_find.edit_title("nothing")
+        print(id_find)
+        id_find.edit_tag("#window", "#ok")
+        print(id_find)
+        print(notebook.to_dict(id_find))
+    except IndexError:
+        print("Note with such ID not found")
 
     # Of course, it could be edited in another way by using a different search options,
     # but you must be careful since such a search method may return a list.
@@ -354,12 +375,18 @@ if __name__ == "__main__":
     dict_result = notebook.to_dict(second_find)
     print(dict_result)
 
-    # returns one object if just one match
+    # Returns one object; just one match if the request is precise
     one_find = notebook.find_note("Question college")
+    print(one_find)
+    one_find.edit_note("something")
+    print(one_find)
+    one_find.edit_title("nothing")
+    print(one_find)
+    one_find.edit_tag("#heavy", "#ok")
     print(one_find)
 
     print(notebook.get_id_list())
-
+    print(notebook.sort_note_by_tag())
     print("Hier ist the full list: \n")
     for name, record in notebook.data.items():
         print(str(record) + "\n")
