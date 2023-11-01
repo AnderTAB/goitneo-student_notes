@@ -1,24 +1,30 @@
-COMMANDS = [
-    "hello",
-    "close",
-    "help",
-    "add-contact (add-contact name address phone email birthday(DD.MM.YYYY))",
-    "change-contact (change-contact name)",
-    "delete-contact (delete-contact name)",
-    "all-contacts",
-    "find-contact (find-contact name or address or phone or email or birthday(DD.MM.YYYY))",
-    "contacts-birthdays (contacts-birthdays days(int))",
-    "find-notes (find-notes TITLE or text or date)",
-    "add-note (add-note TITLE text date))",
-    "delete-note (delete-note TITLE)",
-    "change-note-title (change-note TITLE NEW_TITLE)",
-    "change-note-title (change-note TITLE new_text)",
-    "add-note-tags (add-note-tags *your tags*)",
-    "delete-note-tag (delete-note TITLE Tag)",
-    "change-note-tag (change-note-tag tag new_tag)",
-    "find-note-tag (find-note-tag *your tags*)",
-    "sort-note-tag (find-note-tag *your tags*)",
-]
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter
+
+COMMANDS = WordCompleter(
+    [
+        "hello",
+        "close",
+        "help",
+        "add_contact name address phone email birthday(DD.MM.YYYY)",
+        "change_contact name",
+        "delete_contact name",
+        "all_contacts",
+        "find_contact name or address or phone or email or birthday(DD.MM.YYYY)",
+        "contacts_birthdays days(int)",
+        "find_notes TITLE or text or date",
+        "add_note TITLE text date)",
+        "delete_note TITLE",
+        "change_note TITLE NEW_TITLE",
+        "change_note TITLE new_text",
+        "add_note_tags *your tags*",
+        "delete_note TITLE Tag",
+        "change_note_tag tag new_tag",
+        "find_note_tag *your tags*",
+        "find_note_tag *your tags*",
+    ],
+    ignore_case=True,
+)
 
 
 def _parse_input(user_input):
@@ -160,7 +166,9 @@ def main():
     print(msg)
 
     while True:
-        user_input = input("Enter a command: ")
+        user_input = prompt(
+            "Enter a command: ", completer=COMMANDS, complete_while_typing=False
+        )
         command, *args = _parse_input(user_input)
 
         if command in ["good bye", "close", "exit"]:
@@ -170,37 +178,37 @@ def main():
             helloBot()
         elif command == "help":
             helpBot()
-        elif command == "add-contact":
+        elif command == "add_contact":
             add_contact(args)
-        elif command == "delete-contact":
+        elif command == "delete_contact":
             delete_contact(args)
-        elif command == "change-contact":
+        elif command == "change_contact":
             change_contact(args)
-        elif command == "find-contact":
+        elif command == "find_contact":
             find_contact(args)
-        elif command == "all-contacts":
+        elif command == "all_contacts":
             all_contacts()
-        elif command == "find-notes":
+        elif command == "find_notes":
             find_notes(args)
-        elif command == "add-note":
+        elif command == "add_note":
             add_note(args)
-        elif command == "delete-note":
+        elif command == "delete_note":
             delete_note(args)
-        elif command == "change-note-title":
+        elif command == "change_note_title":
             change_note_title(args)
-        elif command == "change-note-text":
+        elif command == "change_note_text":
             change_note_text(args)
-        elif command == "add-note-tags":
+        elif command == "add_note_tags":
             add_note_tags(args)
-        elif command == "delete-note-tag":
+        elif command == "delete_note_tag":
             delete_note_tag(args)
-        elif command == "change-note-tag":
+        elif command == "change_note_tag":
             change_note_tag(args)
-        elif command == "find-note-tag":
+        elif command == "find_note_tag":
             find_note_tag(args)
-        elif command == "sort-note-tag":
+        elif command == "sort_note_tag":
             sort_note_tag(args)
-        elif command == "contacts-birthdays":
+        elif command == "contacts_birthdays":
             contacts_birthdays(args)
         else:
             print("Invalid command.")
