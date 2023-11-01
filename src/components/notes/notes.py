@@ -234,8 +234,9 @@ class NoteData(UserDict):
         return note_list
 
     def read_csv_file(self, file):
-        script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-1])
-        file = os.path.join(script_dir, f"db\\{file}")
+        # script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-1])
+        file = os.path.abspath(f"src/db/notes/{file}")
+        print(file)
         with open(file, "r") as f:
             dict_reader = DictReader(f, delimiter=";")
             note_data = list(dict_reader)
@@ -268,8 +269,7 @@ class NoteData(UserDict):
                 self.add_record(record)
 
     def write_csv_file(self, file):
-        script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-1])
-        file = os.path.join(script_dir, f"db\\{file}")
+        file = os.path.abspath(f"src/db/notes/{file}")
         field_names = ["title", "note", "tag", "date", "id"]
         users_list = self.to_dict()
         with open(file, "w") as csvfile:
@@ -280,7 +280,7 @@ class NoteData(UserDict):
 
 if __name__ == "__main__":
     notebook = NoteData()  # create user dict object
-    notebook.read_csv_file("fake_note.csv")  # read csv data
+    notebook.read_csv_file("data.csv")  # read csv data
     first_notation = Record()  # create record object
     first_notation.add_title("SOME TASK")  # add title to created object
     first_notation.add_note("Some text")  # add note to creted object
