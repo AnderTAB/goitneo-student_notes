@@ -9,7 +9,7 @@ COMMANDS = WordCompleter(
         "close",
         "help",
         "add_contact name address phone email birthday(DD.MM.YYYY)",
-        "change_contact name",
+        "change_contact name address phone email birthday(DD.MM.YYYY)",
         "delete_contact name",
         "all_contacts",
         "find_contact name or address or phone or email or birthday(DD.MM.YYYY)",
@@ -17,13 +17,13 @@ COMMANDS = WordCompleter(
         "find_notes TITLE or text or date",
         "add_note TITLE text *your tags*",
         "delete_note TITLE",
-        "change_note TITLE NEW_TITLE",
-        "change_note TITLE new_text",
+        "change_note_title TITLE NEW_TITLE",
+        "change_note_text TITLE new_text",
         "add_note_tags TITLE *your tags*",
-        "delete_note TITLE Tag",
-        "change_note_tag tag new_tag",
+        "delete_note_tag TITLE Tag",
+        "change_note_tag TITLE tag new_tag",
         "find_note_tag *your tags*",
-        "find_note_tag *your tags*",
+        "sort_note_tag *your tags*",
     ],
     ignore_case=True,
 )
@@ -107,7 +107,7 @@ def all_contacts():
 
 @_input_error
 def contacts_birthdays(args):
-    days = args[0]
+    days = int(args[0])
     print(days)
 
 
