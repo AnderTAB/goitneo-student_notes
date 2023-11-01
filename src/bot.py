@@ -1,6 +1,8 @@
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
+from components.notes.notes import Record, NoteData
+
 COMMANDS = WordCompleter(
     [
         "hello",
@@ -13,7 +15,7 @@ COMMANDS = WordCompleter(
         "find_contact name or address or phone or email or birthday(DD.MM.YYYY)",
         "contacts_birthdays days(int)",
         "find_notes TITLE or text or date",
-        "add_note TITLE text date)",
+        "add_note TITLE text *your tags*",
         "delete_note TITLE",
         "change_note_title TITLE NEW_TITLE",
         "change_note_text TITLE new_text",
@@ -27,7 +29,7 @@ COMMANDS = WordCompleter(
 )
 
 # contacts = AddressBook()
-# notes = NotesBook()
+notes = NoteData()
 # fileManager = FileManager()
 
 
@@ -52,6 +54,7 @@ def _input_error(func):
 def close_bot():
     # fileManager.save_contacts(contacts.data)
     # fileManager.save_notes(notes.data)
+    notes.write_csv_file("data.csv")
     print("Good bye!")
 
 
@@ -67,6 +70,8 @@ def helpBot():
 @_input_error
 def add_contact(args):
     name, address, phone, email, birthday = args
+    # record = Record()
+    # record.add_title(title)
     # contacts.add_name(name)
     # contacts.add_address(address)
     # contacts.add_phone(phone)
@@ -109,25 +114,36 @@ def contacts_birthdays(args):
 @_input_error
 def find_notes(args):
     key = args[0]
+
+    # Code
+
     print(key)
 
 
 @_input_error
 def add_note(args):
-    TITLE, *text = args
-    print(TITLE, *text)
+    TITLE, text, *tags = args
+    record = Record()
+    record.add_title(TITLE)
+    record.add_note(text)
+    record.add_tag(tags)
+    notes.add_record(record)
+    print(TITLE, text, *tags)
 
 
 @_input_error
 def delete_note(args):
     TITLE = args[0]
-
+    notes.delete(TITLE)
     print(TITLE)
 
 
 @_input_error
 def change_note_title(args):
     TITLE, NEW_TITLE = args
+
+    note = notes.find_note(TITLE)
+    note.edit_title(NEW_TITLE)
 
     print(TITLE, NEW_TITLE)
 
@@ -136,12 +152,18 @@ def change_note_title(args):
 def change_note_text(args):
     TITLE, new_text = args
 
+    note = notes.find_note(TITLE)
+    note.edit_note(new_text)
+
     print(TITLE, new_text)
 
 
 @_input_error
 def add_note_tags(args):
     TITLE, *tags = args
+
+    note = notes.find_note(TITLE)
+    note.add_tag(tags)
 
     print(TITLE, *tags)
 
@@ -150,12 +172,18 @@ def add_note_tags(args):
 def delete_note_tag(args):
     TITLE, tag = args
 
+    note = notes.find_note(TITLE)
+    note.del_tag(tag)
+
     print(TITLE, tag)
 
 
 @_input_error
 def change_note_tag(args):
     TITLE, tag, new_tag = args
+
+    note = notes.find_note(TITLE)
+    note.edit_tag(tag, new_tag)
 
     print(TITLE, tag, new_tag)
 
@@ -164,6 +192,8 @@ def change_note_tag(args):
 def find_note_tag(args):
     tags = args
 
+    # Code
+
     print(tags)
 
 
@@ -171,12 +201,15 @@ def find_note_tag(args):
 def sort_note_tag(args):
     tags = args
 
+    # Code
+
     print(tags)
 
 
 def main():
     # contacts.data = fileManager.read_contacts()
     # notes.data = fileManager.read_notes()
+    notes.read_csv_file("data.csv")
 
     msg = "\n==============================\nWelcome to the assistant bot!\n\nI will help you with your student activity.\n==============================\n"
     print(msg)
