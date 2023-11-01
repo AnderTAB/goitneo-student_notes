@@ -44,7 +44,6 @@ class Record:
         if Record.current_id not in notebook.get_id_list():
             self.id = ID(Record.current_id)
         else:
-            print(int(max(notebook.get_id_list())) + 1)
             Record.current_id = int(max(notebook.get_id_list())) + 1
             self.id = ID(Record.current_id)
         Record.current_id += 1
@@ -54,7 +53,6 @@ class Record:
             Record.current_id = id
             self.id = ID(Record.current_id)
         else:
-            print(int(max(notebook.get_id_list())) + 1)
             Record.current_id = int(max(notebook.get_id_list())) + 1
             self.id = ID(Record.current_id)
         Record.current_id += 1
@@ -282,7 +280,7 @@ class NoteData(UserDict):
 
 if __name__ == "__main__":
     notebook = NoteData()  # create user dict object
-    notebook.read_csv_file("fake_note_1.csv")  # read csv data
+    notebook.read_csv_file("fake_note.csv")  # read csv data
     first_notation = Record()  # create record object
     first_notation.add_title("SOME TASK")  # add title to created object
     first_notation.add_note("Some text")  # add note to creted object
@@ -355,4 +353,4 @@ if __name__ == "__main__":
     for name, record in notebook.data.items():
         print(str(record) + "\n")
 
-    notebook.write_csv_file("fake_note_1.csv")
+#    notebook.write_csv_file("fake_note_1.csv")
