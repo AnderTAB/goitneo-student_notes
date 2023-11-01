@@ -34,19 +34,30 @@ class ID(Field):
 
 
 class Record:
-    current_id = 1
+    current_id = int(1)
 
     def __init__(self):
         self.title = None
         self.tag = []
         self.note = None
         self.date = datetime.now().strftime("%d.%m.%Y %H:%M")
-        self.id = ID(id)
-        Record.current_id += 1        
-        
+        if Record.current_id not in notebook.get_id_list():
+            self.id = ID(Record.current_id)
+        else:
+            print(int(max(notebook.get_id_list())) + 1)
+            Record.current_id = int(max(notebook.get_id_list())) + 1
+            self.id = ID(Record.current_id)
+        Record.current_id += 1
+
     def add_id(self, id):
-        self.id = ID(id)
-        
+        if id not in notebook.get_id_list():
+            Record.current_id = id
+            self.id = ID(Record.current_id)
+        else:
+            print(int(max(notebook.get_id_list())) + 1)
+            Record.current_id = int(max(notebook.get_id_list())) + 1
+            self.id = ID(Record.current_id)
+        Record.current_id += 1
 
     def add_title(self, title):
         self.title = Title(title)
@@ -143,6 +154,11 @@ class NoteData(UserDict):
     def add_record(self, note):
         self.data[note.title.text] = note
 
+    def get_id_list(self):
+        dict_data = self.to_dict()
+        id_list = [item["id"] for item in dict_data]
+        return id_list
+
     def delete(self, note_name):
         if note_name in self.data:
             del self.data[note_name]
@@ -232,7 +248,7 @@ class NoteData(UserDict):
                     record = Record()
                     record.add_title(value)
                 if key == "id":
-                    record.add_id(value)
+                    record.add_id(int(value))
                 elif key == "tag":
                     if len(value.split(",")) > 1:
                         for v in value.split(","):
@@ -333,8 +349,10 @@ if __name__ == "__main__":
     dict_result = notebook.to_dict(second_find)
     print(dict_result)
 
+    print(notebook.get_id_list())
+
     print("Hier ist the full list: \n")
     for name, record in notebook.data.items():
         print(str(record) + "\n")
 
- #   notebook.write_csv_file("fake_note_1.csv")
+    notebook.write_csv_file("fake_note_1.csv")
