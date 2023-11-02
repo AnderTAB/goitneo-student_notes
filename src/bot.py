@@ -2,6 +2,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
 from components.notes.notes import Record, NoteData
+from components.contacts.contacts import AddressBook
 
 COMMANDS = WordCompleter(
     [
@@ -12,25 +13,25 @@ COMMANDS = WordCompleter(
         "change_contact name address phone email birthday(DD.MM.YYYY)",
         "delete_contact name",
         "all_contacts",
-        "find_contact name or address or phone or email or birthday(DD.MM.YYYY)",
+        "find_contact name || address || phone || email || birthday(DD.MM.YYYY)",
         "contacts_birthdays days(int)",
-        "find_notes TITLE or text or date",
-        "add_note TITLE text *your tags*",
+        "find_notes TITLE || text || date",
+        "add_note TITLE text *your #tags*",
         "delete_note TITLE",
         "change_note_title TITLE NEW_TITLE",
         "change_note_text TITLE new_text",
         "add_note_tags TITLE *your tags*",
-        "delete_note_tag TITLE Tag",
-        "change_note_tag TITLE tag new_tag",
-        "find_note_tag *your tags*",
-        "sort_note_tag *your tags*",
+        "delete_note_tag TITLE #Tag",
+        "change_note_tag TITLE #tag #new_tag",
+        "find_note_tag *your #tags*",
+        "sort_note_tag *your #tags*",
     ],
     ignore_case=True,
 )
 
-# contacts = AddressBook()
+contacts = AddressBook()
 notes = NoteData()
-# fileManager = FileManager()
+FILENAME = "data.csv"
 
 
 def _parse_input(user_input):
@@ -52,9 +53,8 @@ def _input_error(func):
 
 
 def close_bot():
-    # fileManager.save_contacts(contacts.data)
-    # fileManager.save_notes(notes.data)
-    notes.write_csv_file("data.csv")
+    contacts.save_to_file(FILENAME)
+    notes.write_csv_file(FILENAME)
     print("Good bye!")
 
 
@@ -192,7 +192,7 @@ def change_note_tag(args):
 def find_note_tag(args):
     tags = args
 
-    # Code
+    notes.find_note_by_tag(tags)
 
     print(tags)
 
@@ -207,9 +207,8 @@ def sort_note_tag(args):
 
 
 def main():
-    # contacts.data = fileManager.read_contacts()
-    # notes.data = fileManager.read_notes()
-    notes.read_csv_file("data.csv")
+    contacts.read_from_file(FILENAME)
+    notes.read_csv_file(FILENAME)
 
     msg = "\n==============================\nWelcome to the assistant bot!\n\nI will help you with your student activity.\n==============================\n"
     print(msg)

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import json
 import os.path
 
+
 class Field:
     def __init__(self, value):
         self.value = value
@@ -70,40 +71,35 @@ class AddressBook(UserDict):
         self.data = {}
 
     def save_to_file(self, filename):
-        filename = 'bd.json'
+        filename = "bd.json"
 
         if os.path.exists(filename) == False:
-            with open(filename,'w') as file: 
+            with open(filename, "w") as file:
                 bd = {}
                 json.dump(bd, file)
-        
+
         with open(filename) as file:
             data = json.load(file)
             record = {}
             for el in self.data:
-                res = str(self.data[el]).replace(',', '').split()                            
+                res = str(self.data[el]).replace(",", "").split()
                 data[res[2]] = [
-                        {
-                        "address": '',
-                        "phone": res[4],
-                        "email": '',
-                        "birthdate": res[6]
-                        }
-                    ]   
-                           
+                    {"address": "", "phone": res[4], "email": "", "birthdate": res[6]}
+                ]
+
         with open(filename, "w") as file:
-            json.dump(data, file,indent=2)
+            json.dump(data, file, indent=2)
 
     def read_from_file(self, filename):
         try:
-            with open(filename, "r") as file:              
+            with open(filename, "r") as file:
                 data = json.load(file)
-                for key, value in data.items():                   
+                for key, value in data.items():
                     self.name = key
-                    self.phone = value[0]['phone']
-                    if value[0]['birthdate'] != 'None':
-                        date = str(value[0]['birthdate']).split('-')
-                        birthday = f'{date[2]}.{date[1]}.{date[0]}'
+                    self.phone = value[0]["phone"]
+                    if value[0]["birthdate"] != "None":
+                        date = str(value[0]["birthdate"]).split("-")
+                        birthday = f"{date[2]}.{date[1]}.{date[0]}"
                     else:
                         birthday = None
                     record = Record(key)
@@ -141,7 +137,7 @@ class AddressBook(UserDict):
             else:
                 raise ValueError("Contact not found")
 
-    def birthdays(self,diff):
+    def birthdays(self, diff):
         birthday_dict = {}
         for user in sorted(self.data.values(), key=lambda x: x.birthday):
             current_date = datetime.now().date()
@@ -154,7 +150,7 @@ class AddressBook(UserDict):
             if birthday_this_year < current_date:
                 birthday_this_year = birthday.replace(year=next_year)
 
-            delta_days = current_date + timedelta(days = int(diff[0]))
+            delta_days = current_date + timedelta(days=int(diff[0]))
 
             if birthday_this_year == delta_days:
                 weekday = birthday_this_year.strftime("%A")
