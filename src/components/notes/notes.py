@@ -160,47 +160,72 @@ class NoteData(UserDict):
     def delete(self, note_name):
         if note_name in self.data:
             del self.data[note_name]
+        else:
+            return "No such note with name {note_name} found"
 
     def find_note(self, word):
         if len(word) >= 3:
             pattern = re.compile(word.lower())
             result = []
-            if re.match(r"\d{2}.\d{2}.\d{4}", word):
-                for note in self.data:
-                    if word == self.data[note].date.split(" ")[0]:
-                        result.append(self.data[note])
+            for note in self.data:
+                note_find = re.findall(pattern, self.data[note].note.text.lower())
+                title_find = re.findall(pattern, self.data[note].title.text.lower())
+                tag_find = re.findall(
+                    pattern,
+                    "".join(p.text.lower() for p in self.data[note].tag),
+                )
+                date_find = re.findall(pattern, self.data[note].date)
+                if (
+                    len(note_find) > 0
+                    or len(title_find) > 0
+                    or len(tag_find) > 0
+                    or len(date_find) > 0
+                ):
+                    result.append(self.data[note])
+                else:
+                    continue
+            if len(result) > 1:
                 return result
-            elif re.match(r"#\w+", word):
-                for note in self.data:
-                    tag_find = re.findall(
-                        pattern, " ".join(p.text.lower() for p in self.data[note].tag)
-                    )
-                    if len(tag_find) > 0:
-                        result.append(self.data[note])
-                    else:
-                        continue
-                return result
+            elif len(result) == 1:
+                return result[0]
             else:
-                for note in self.data:
-                    note_find = re.findall(pattern, self.data[note].note.text.lower())
-                    title_find = re.findall(pattern, self.data[note].title.text.lower())
-                    tag_find = re.findall(
-                        pattern,
-                        "".join(p.text.lower() for p in self.data[note].tag),
-                    )
-                    date_find = re.findall(pattern, self.data[note].date)
-                    if (
-                        len(note_find) > 0
-                        or len(title_find) > 0
-                        or len(tag_find) > 0
-                        or len(date_find) > 0
-                    ):
-                        result.append(self.data[note])
-                    else:
-                        continue
-                return result
+                return []
         else:
             raise ValueError("Search word schud have at least 3 characters")
+
+    def find_note_by_tag(self, tag):
+        result = []
+        pattern = re.compile(tag)
+        for note in self.data:
+            tag_find = re.findall(
+                pattern, " ".join(p.text.lower() for p in self.data[note].tag)
+            )
+            if len(tag_find) > 0:
+                result.append(self.data[note])
+            else:
+                continue
+        if len(result) > 1:
+            return result
+        elif len(result) == 1:
+            return result[0]
+        else:
+            return []
+
+    def find_note_by_date(self, date):
+        result = []
+        if re.match(r"\d{2}.\d{2}.\d{4}", date):
+            pattern = re.compile(date)
+            for note in self.data:
+                if re.match(pattern, self.data[note].date):
+                    result.append(self.data[note])
+        else:
+            return "Date schould be in format DD.MM.YYYY"
+        if len(result) > 1:
+            return result
+        elif len(result) == 1:
+            return result[0]
+        else:
+            return []
 
     def get_note_by_id(self, id):
         for note in self.data:
@@ -209,8 +234,20 @@ class NoteData(UserDict):
                 break
         return result if result is not None else None
 
+    def sort_note_by_tag_amount(self, reverse=False):
+        result = []
+        result_dict = {}
+        dict_data = self.to_dict()
+        for d in dict_data:
+            d["tag"] = d["tag"].split(",")
+            result.append(d)
+        sorted_list = sorted(result, key=lambda d: len(d["tag"]), reverse=reverse)
+        for r in sorted_list:
+            result_dict[r["title"]] = self.get_note_by_id(r["id"])
+        return result_dict
+
     def to_dict(self, obj=None):
-        note_list = []
+        result = []
         if obj is None:
             for rec in self.data:
                 note_dict = {
@@ -220,8 +257,8 @@ class NoteData(UserDict):
                     "date": self.data[rec].date,
                     "id": self.data[rec].id.text,
                 }
-                note_list.append(note_dict)
-        else:
+                result.append(note_dict)
+        elif isinstance(obj, list):
             for rec in obj:
                 note_dict = {
                     "title": rec.title.text,
@@ -230,13 +267,21 @@ class NoteData(UserDict):
                     "date": rec.date,
                     "id": rec.id.text,
                 }
-                note_list.append(note_dict)
-        return note_list
+                result.append(note_dict)
+        else:
+            note_dict = {
+                "title": obj.title.text,
+                "tag": ", ".join(p.text for p in obj.tag),
+                "note": obj.note.text,
+                "date": obj.date,
+                "id": obj.id.text,
+            }
+            result.append(note_dict)
+        return result
 
     def read_csv_file(self, file):
-        # script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-1])
-        file = os.path.abspath(f"src/db/notes/{file}")
-        print(file)
+        script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-3])
+        file = os.path.join(script_dir, f"db\\{file}")
         with open(file, "r") as f:
             dict_reader = DictReader(f, delimiter=";")
             note_data = list(dict_reader)
@@ -269,7 +314,8 @@ class NoteData(UserDict):
                 self.add_record(record)
 
     def write_csv_file(self, file):
-        file = os.path.abspath(f"src/db/notes/{file}")
+        script_dir = "\\".join(os.path.dirname(__file__).split("\\")[:-3])
+        file = os.path.join(script_dir, f"db\\{file}")
         field_names = ["title", "note", "tag", "date", "id"]
         users_list = self.to_dict()
         with open(file, "w") as csvfile:
