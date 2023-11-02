@@ -101,10 +101,15 @@ class AddressBook(UserDict):
                 for key, value in data.items():                   
                     self.name = key
                     self.phone = value[0]['phone']
-                    self.birthday = value[0]['birthdate']
+                    if value[0]['birthdate'] != 'None':
+                        date = str(value[0]['birthdate']).split('-')
+                        birthday = f'{date[2]}.{date[1]}.{date[0]}'
+                    else:
+                        birthday = None
                     record = Record(key)
                     record.add_phone(self.phone)
-                    record.birthday = self.birthday
+                    if birthday != None:
+                        record.birthday = Birthday(birthday)
                     self.data[key] = record
 
         except FileNotFoundError:
