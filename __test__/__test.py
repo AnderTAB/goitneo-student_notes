@@ -1,4 +1,6 @@
 import subprocess
+import os
+
 
 # Список команд для выполнения
 commands = [
@@ -97,9 +99,10 @@ commands = [
     "close",
 ]
 
+file = os.path.abspath(f"src/bot.py")
 # Запуск бота и передача команд
 bot_process = subprocess.Popen(
-    ["python", "bot.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True
+    ["python", file], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True
 )
 
 for command in commands:

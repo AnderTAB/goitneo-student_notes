@@ -4,34 +4,36 @@ from prompt_toolkit.completion import WordCompleter
 from components.notes.notes import Record, NoteData
 from components.contacts.contacts import AddressBook
 
-COMMANDS = WordCompleter(
-    [
-        "hello",
-        "close",
-        "help",
-        "add_contact name address phone email birthday(DD.MM.YYYY)",
-        "change_contact name address phone email birthday(DD.MM.YYYY)",
-        "delete_contact name",
-        "all_contacts",
-        "find_contact name || address || phone || email || birthday(DD.MM.YYYY)",
-        "contacts_birthdays days(int)",
-        "find_notes TITLE || text || date",
-        "add_note TITLE text *your #tags*",
-        "delete_note TITLE",
-        "change_note_title TITLE NEW_TITLE",
-        "change_note_text TITLE new_text",
-        "add_note_tags TITLE *your tags*",
-        "delete_note_tag TITLE #Tag",
-        "change_note_tag TITLE #tag #new_tag",
-        "find_note_tag *your #tags*",
-        "sort_note_tag *your #tags*",
-    ],
+COMMANDS = [
+    "hello",
+    "close",
+    "help",
+    "add_contact name address phone email birthday(DD.MM.YYYY)",
+    "change_contact name address phone email birthday(DD.MM.YYYY)",
+    "delete_contact name",
+    "all_contacts",
+    "find_contact name || address || phone || email || birthday(DD.MM.YYYY)",
+    "contacts_birthdays days(int)",
+    "find_notes TITLE || text || date",
+    "add_note TITLE text *your #tags*",
+    "delete_note TITLE",
+    "change_note_title TITLE NEW_TITLE",
+    "change_note_text TITLE new_text",
+    "add_note_tags TITLE *your tags*",
+    "delete_note_tag TITLE #Tag",
+    "change_note_tag TITLE #tag #new_tag",
+    "find_note_tag *your #tags*",
+    "sort_note_tag *your #tags*",
+]
+COMMANDS_TEST = WordCompleter(
+    COMMANDS,
     ignore_case=True,
 )
 
 contacts = AddressBook()
 notes = NoteData()
-FILENAME = "data.csv"
+FILENAME_CONTACTS = "data.json"
+FILENAME_NOTES = "data.csv"
 
 
 def _parse_input(user_input):
@@ -53,8 +55,8 @@ def _input_error(func):
 
 
 def close_bot():
-    contacts.save_to_file(FILENAME)
-    notes.write_csv_file(FILENAME)
+    contacts.save_to_file(FILENAME_CONTACTS)
+    notes.write_csv_file(FILENAME_NOTES)
     print("Good bye!")
 
 
@@ -91,24 +93,26 @@ def change_contact(args):
 @_input_error
 def delete_contact(args):
     name = args[0]
-    print(name)
+    print(name)  # Test print | Clean after
 
 
 @_input_error
 def find_contact(args):
     key = args[0]
-    print(key)
+    print(key)  # Test print | Clean after
 
 
 @_input_error
 def all_contacts():
-    print("All Contacts")
+    print("All Contacts")  # Test print | Clean after
 
 
 @_input_error
 def contacts_birthdays(args):
     days = int(args[0])
-    print(days)
+    birthdays = contacts.birthdays(days)
+    print(days)  # Test print | Clean after
+    print(birthdays)
 
 
 @_input_error
@@ -117,7 +121,7 @@ def find_notes(args):
 
     # Code
 
-    print(key)
+    print(key)  # Test print | Clean after
 
 
 @_input_error
@@ -128,14 +132,14 @@ def add_note(args):
     record.add_note(text)
     record.add_tag(tags)
     notes.add_record(record)
-    print(TITLE, text, *tags)
+    print(TITLE, text, *tags)  # Test print | Clean after
 
 
 @_input_error
 def delete_note(args):
     TITLE = args[0]
     notes.delete(TITLE)
-    print(TITLE)
+    print(TITLE)  # Test print | Clean after
 
 
 @_input_error
@@ -145,7 +149,7 @@ def change_note_title(args):
     note = notes.find_note(TITLE)
     note.edit_title(NEW_TITLE)
 
-    print(TITLE, NEW_TITLE)
+    print(TITLE, NEW_TITLE)  # Test print | Clean after
 
 
 @_input_error
@@ -155,7 +159,7 @@ def change_note_text(args):
     note = notes.find_note(TITLE)
     note.edit_note(new_text)
 
-    print(TITLE, new_text)
+    print(TITLE, new_text)  # Test print | Clean after
 
 
 @_input_error
@@ -165,7 +169,7 @@ def add_note_tags(args):
     note = notes.find_note(TITLE)
     note.add_tag(tags)
 
-    print(TITLE, *tags)
+    print(TITLE, *tags)  # Test print | Clean after
 
 
 @_input_error
@@ -175,7 +179,7 @@ def delete_note_tag(args):
     note = notes.find_note(TITLE)
     note.del_tag(tag)
 
-    print(TITLE, tag)
+    print(TITLE, tag)  # Test print | Clean after
 
 
 @_input_error
@@ -185,7 +189,7 @@ def change_note_tag(args):
     note = notes.find_note(TITLE)
     note.edit_tag(tag, new_tag)
 
-    print(TITLE, tag, new_tag)
+    print(TITLE, tag, new_tag)  # Test print | Clean after
 
 
 @_input_error
@@ -194,7 +198,7 @@ def find_note_tag(args):
 
     notes.find_note_by_tag(tags)
 
-    print(tags)
+    print(tags)  # Test print | Clean after
 
 
 @_input_error
@@ -203,20 +207,22 @@ def sort_note_tag(args):
 
     # Code
 
-    print(tags)
+    print(tags)  # Test print | Clean after
 
 
 def main():
-    contacts.read_from_file(FILENAME)
-    notes.read_csv_file(FILENAME)
+    contacts.read_from_file(FILENAME_CONTACTS)
+    notes.read_csv_file(FILENAME_NOTES)
 
     msg = "\n==============================\nWelcome to the assistant bot!\n\nI will help you with your student activity.\n==============================\n"
     print(msg)
 
     while True:
-        user_input = prompt(
-            "Enter a command: ", completer=COMMANDS, complete_while_typing=False
-        )
+        # user_input = prompt(
+        #     "Enter a command: ", completer=COMMANDS_TEST, complete_while_typing=False
+        # )
+        # Advanced version for Tab Autocomplete
+        user_input = input("Enter a command: ")  # Basic version for Testing
         command, *args = _parse_input(user_input)
 
         if command in ["good bye", "close", "exit"]:
