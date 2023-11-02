@@ -2,6 +2,7 @@ from collections import UserDict
 from datetime import datetime, timedelta
 import json
 import os.path
+import re
 
 class Field:
     def __init__(self, value):
@@ -29,6 +30,32 @@ class Phone(Field):
         else:
             raise ValueError("Invalid phone number")
 
+class Email(Field):
+    def __init__(self, value):
+        if self.is_valid(value):
+            super().__init__(value)
+        else:
+            raise ValueError("Invalid email address")
+
+    @staticmethod
+    def is_valid(value):
+# Регулярний вираз для перевірки дійсності адреси електронної пошти
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        return re.match(email_pattern, value) is not None
+
+class Address(Field):
+    def __init__(self, value):
+        if self.is_valid2(value):
+            super().__init__(value)
+        else:
+            raise ValueError("Invalid address")
+
+    @staticmethod
+    def is_valid2(value):
+# Регулярний вираз для перевірки дійсності адреси 
+        street_pattern = r'^[A-Za-z0-9\s.-]+$'
+        return re.match(street_pattern, value) is not None
+
 
 class Birthday(Field):
     DATE_FORMAT = "%d.%m.%Y"
@@ -47,10 +74,12 @@ class Birthday(Field):
 
 
 class Record:
-    def __init__(self, name):
+    def __init__(self, name, address=None, email=None):
         self.name = Name(name)
         self.phone = ""
         self.birthday = "None"
+        self.address = Address(address) if address else address
+        self.email = Email(email) if email else email
 
     def add_phone(self, value):
         self.phone = Phone(value)
@@ -58,6 +87,22 @@ class Record:
     def edit_phone(self, new_phone):
         self.phone = new_phone
         return f"Phone number updated to {new_phone}"
+
+    def add_address(self, value):
+        self.address = Address(value)
+
+    def edit_address(self, new_address):
+        self.address = new_address
+        return f"Address updated to {new_address}"
+
+    def add_email(self, value):
+        self.email = Email(value)
+
+    def edit_email(self, new_email):
+        self.email = new_email
+        return f"Email updated to {new_email}"
+    
+    
 
     def __str__(self):
         return (
@@ -167,3 +212,19 @@ class AddressBook(UserDict):
         for day, names in birthday_dict.items():
             res += f"{day}: {', '.join(map(str, names))}\n"
         return res
+
+# пошук контакту за будь якою інформацією, поки не працює до кінця хзз чому
+    def search_contacts(self, query):
+        found_contacts = []
+        query = query.lower()
+        for name, contact in self.data.items():
+            contact_info = {
+                'name': contact.name.value.lower(),
+                'phone': contact.phone.value,
+                'birthday': contact.birthday,
+                'address': contact.address.value,
+                'email': contact.email.value,
+            }
+            if query in contact_info.values():
+                found_contacts.append(contact)
+        return found_contacts

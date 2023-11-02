@@ -69,25 +69,21 @@ def helpBot():
 
 @_input_error
 def add_contact(args):
-    name, address, phone, email, birthday = args
-    # record = Record()
-    # record.add_title(title)
-    # contacts.add_name(name)
-    # contacts.add_address(address)
-    # contacts.add_phone(phone)
-    # contacts.add_email(email)
-    # contacts.add_birthday(birthday)
-    print(name, address, phone, email, birthday)
+    name, phone = args
+    record = Record(name)
+    record.add_phone(phone)
+    contacts.add_record(record)
+    print("Contact added.")
 
 
 @_input_error
 def change_contact(args):
-    name, address, phone, email, birthday = args
-    # contacts.find(name)
-    # contacts.change_contact(address, phone, email, birthday)
-    print(name, address, phone, email, birthday)
-
-
+    name, phone = args
+    contact = contacts.find(name)
+    res = contact.edit_phone(phone)
+    print(res)
+    
+    
 @_input_error
 def delete_contact(args):
     name = args[0]
@@ -99,6 +95,45 @@ def find_contact(args):
     key = args[0]
     print(key)
 
+@_input_error
+def add_address(args):
+    name, address = args
+    record = Record(name)
+    record.add_address(address)
+    contacts.add_record(record)
+    print("Contact updated.")
+    
+
+@_input_error
+def change_address(args):
+    name, address = args
+    contact = contacts.find(name)
+    res = contact.edit_address(address)
+    print(res)
+
+def add_email(args):
+    name, email = args
+    record = Record(name)
+    record.add_email(email)
+    contacts.add_record(record)
+    print("Contact updated.")
+
+@_input_error
+def change_email(args):
+    name, email = args
+    contact = contacts.find(name)
+    res = contact.edit_email(email)
+    print(res)
+
+@_input_error
+def search_contacts(args):
+    name = args[0]
+    found_contacts = contacts.search_contacts(name)
+    if found_contacts:
+        for contact in found_contacts:
+            print(contact)
+    else:
+        print("No contacts found.")
 
 @_input_error
 def all_contacts():
@@ -237,6 +272,16 @@ def main():
             find_contact(args)
         elif command == "all_contacts":
             all_contacts()
+        elif command == "add-address":
+            add_address(args)
+        elif command == "change-address":
+            change_address(args)
+        elif command == "add-email":
+            add_email(args)
+        elif command == "change-email":
+            change_email(args)           
+        elif command == "search":
+            search_contacts(args) 
         elif command == "find_notes":
             find_notes(args)
         elif command == "add_note":
