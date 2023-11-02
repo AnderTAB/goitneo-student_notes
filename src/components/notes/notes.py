@@ -40,20 +40,21 @@ class Record:
         self.title = None
         self.tag = []
         self.note = None
+        self.notebook = NoteData()
         self.date = datetime.now().strftime("%d.%m.%Y %H:%M")
-        if Record.current_id not in notebook.get_id_list():
+        if Record.current_id not in self.notebook.get_id_list():
             self.id = ID(Record.current_id)
         else:
-            Record.current_id = int(max(notebook.get_id_list())) + 1
+            Record.current_id = int(max(self.notebook.get_id_list())) + 1
             self.id = ID(Record.current_id)
         Record.current_id += 1
 
     def add_id(self, id):
-        if id not in notebook.get_id_list():
+        if id not in self.notebook.get_id_list():
             Record.current_id = id
             self.id = ID(Record.current_id)
         else:
-            Record.current_id = int(max(notebook.get_id_list())) + 1
+            Record.current_id = int(max(self.notebook.get_id_list())) + 1
             self.id = ID(Record.current_id)
         Record.current_id += 1
 
@@ -278,79 +279,79 @@ class NoteData(UserDict):
             writer.writerows(users_list)
 
 
-# if __name__ == "__main__":
-#     notebook = NoteData()  # create user dict object
-#     notebook.read_csv_file("data.csv")  # read csv data
-#     first_notation = Record()  # create record object
-#     first_notation.add_title("SOME TASK")  # add title to created object
-#     first_notation.add_note("Some text")  # add note to creted object
-#     first_notation.add_tag("#Lab, #20")  # add tags to object
-#     first_notation.add_tag("#Lab #20")  # check that tags are not duplicated
-#     first_notation.add_tag("#paht")  # add single tag
-#     notebook.add_record(first_notation)  # add object to user dict
-#     #    print(first_notation)
+if __name__ == "__main__":
+    notebook = NoteData()  # create user dict object
+#    notebook.read_csv_file("data.csv")  # read csv data
+    first_notation = Record()  # create record object
+    first_notation.add_title("SOME TASK")  # add title to created object
+    first_notation.add_note("Some text")  # add note to creted object
+    first_notation.add_tag("#Lab, #20")  # add tags to object
+    first_notation.add_tag("#Lab #20")  # check that tags are not duplicated
+    first_notation.add_tag("#paht")  # add single tag
+    notebook.add_record(first_notation)  # add object to user dict
+    #    print(first_notation)
 
-#     # create another record object
-#     first_notation = Record()
+    # create another record object
+    first_notation = Record()
 
-#     # To create a record automatically with the title in uppercase,
-#     # tags with only '#' symbols, and the note containing the rest of the text
-#     first_notation.create_record(
-#         """
-#                                  PROJECT SUBMISSION FOR HYDRODYNAMICS #PAKHT, #LABA, #20POINTS
-#                                  It is necessary to complete a project on the topic "......"
-#                                  Preliminary defense in the 4th building, room 201..."""
-#     )
-#     notebook.add_record(first_notation)  # add record to user dict
+    # To create a record automatically with the title in uppercase,
+    # tags with only '#' symbols, and the note containing the rest of the text
+    first_notation.create_record(
+        """
+                                 PROJECT SUBMISSION FOR HYDRODYNAMICS #PAKHT, #LABA, #20POINTS
+                                 It is necessary to complete a project on the topic "......"
+                                 Preliminary defense in the 4th building, room 201..."""
+    )
+    notebook.add_record(first_notation)  # add record to user dict
 
-#     # To create a similar object with a different ID
-#     some_notataion = Record()
-#     some_notataion.create_record(
-#         """
-#                                  PROJECT SUBMISSION FOR HYDRODYNAMICS #PAKHT, #LABA, #20POINTS
-#                                  It is necessary to complete a project on the topic "......"
-#                                  Preliminary defense in the 4th building, room 201..."""
-#     )
-#     notebook.add_record(some_notataion)
+    # To create a similar object with a different ID
+    some_notataion = Record()
+    some_notataion.create_record(
+        """
+                                 PROJECT SUBMISSION FOR HYDRODYNAMICS #PAKHT, #LABA, #20POINTS
+                                 It is necessary to complete a project on the topic "......"
+                                 Preliminary defense in the 4th building, room 201..."""
+    )
+    notebook.add_record(some_notataion)
 
-#     second_notation = Record()
-#     second_notation.create_record(
-#         """LIST TO DO #koliu, #goit not so important 5463899"""
-#     )
-#     notebook.add_record(second_notation)
+    second_notation = Record()
+    second_notation.create_record(
+        """LIST TO DO #koliu, #goit not so important 5463899"""
+    )
+    notebook.add_record(second_notation)
 
-#     # To edit a record, the best and safest way is to find the record by its ID.
-#     # If it is found, then it can be edited.
-#     id_find = notebook.get_note_by_id("2")  #
-#     print(id_find)
-#     id_find.edit_note("something")
-#     print(id_find)
-#     id_find.edit_title("nothing")
-#     print(id_find)
-#     id_find.edit_tag("#window", "#ok")
-#     print(id_find)
+    # To edit a record, the best and safest way is to find the record by its ID.
+    # If it is found, then it can be edited.
+    id_find = notebook.get_note_by_id("3")  #
+    print(id_find)
+    id_find.edit_note("something")
+    print(id_find)
+    id_find.edit_title("nothing")
+    print(id_find)
+    id_find.edit_tag("#window", "#ok")
+    print(id_find)
 
-#     # Of course, it could be edited in another way by using a different search options,
-#     # but you must be careful since such a search method may return a list.
-#     print(notebook.find_note("Almost election."))
-#     notebook.delete("Almost election.")  # delete the record
-#     print(notebook.find_note("Almost election."))
-#     second_find = notebook.find_note("200")
-#     for r in second_find:
-#         print(str(r))
+    # Of course, it could be edited in another way by using a different search options,
+    # but you must be careful since such a search method may return a list.
+    print(notebook.find_note("Almost election."))
+    notebook.delete("Almost election.")  # delete the record
+    print(notebook.find_note("Almost election."))
+    second_find = notebook.find_note("200")
+    for r in second_find:
+        print(str(r))
 
-#     # returns all data as dict
-#     dict_result = notebook.to_dict()
-#     print(dict_result)
+    # returns all data as dict
+    dict_result = notebook.to_dict()
+    print(dict_result)
 
-#     # it returns a dictionary created from the object.
-#     dict_result = notebook.to_dict(second_find)
-#     print(dict_result)
+    # it returns a dictionary created from the object.
+    dict_result = notebook.to_dict(second_find)
+    print(dict_result)
 
-#     print(notebook.get_id_list())
+    print(notebook.get_id_list())
 
-#     print("Hier ist the full list: \n")
-#     for name, record in notebook.data.items():
-#         print(str(record) + "\n")
+    print("Hier ist the full list: \n")
+    for name, record in notebook.data.items():
+        print(str(record) + "\n")
 
-# #    notebook.write_csv_file("fake_note_1.csv")
+#    notebook.write_csv_file("fake_note_1.csv")
