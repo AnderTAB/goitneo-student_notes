@@ -160,52 +160,72 @@ class NoteData(UserDict):
     def delete(self, note_name):
         if note_name in self.data:
             del self.data[note_name]
+        else:
+            return "No such note with name {note_name} found"
 
     def find_note(self, word):
         if len(word) >= 3:
             pattern = re.compile(word.lower())
             result = []
-            if re.match(r"\d{2}.\d{2}.\d{4}", word):
-                for note in self.data:
-                    if word == self.data[note].date.split(" ")[0]:
-                        result.append(self.data[note])
-                return result
-            elif re.match(r"#\w+", word):
-                for note in self.data:
-                    tag_find = re.findall(
-                        pattern, " ".join(p.text.lower() for p in self.data[note].tag)
-                    )
-                    if len(tag_find) > 0:
-                        result.append(self.data[note])
-                    else:
-                        continue
-                return result if len(result) > 1 else result[0]
-            else:
-                for note in self.data:
-                    note_find = re.findall(pattern, self.data[note].note.text.lower())
-                    title_find = re.findall(pattern, self.data[note].title.text.lower())
-                    tag_find = re.findall(
-                        pattern,
-                        "".join(p.text.lower() for p in self.data[note].tag),
-                    )
-                    date_find = re.findall(pattern, self.data[note].date)
-                    if (
-                        len(note_find) > 0
-                        or len(title_find) > 0
-                        or len(tag_find) > 0
-                        or len(date_find) > 0
-                    ):
-                        result.append(self.data[note])
-                    else:
-                        continue
-                if len(result) > 1:
-                    return result
-                elif len(result) == 0:
-                    return []
+            for note in self.data:
+                note_find = re.findall(pattern, self.data[note].note.text.lower())
+                title_find = re.findall(pattern, self.data[note].title.text.lower())
+                tag_find = re.findall(
+                    pattern,
+                    "".join(p.text.lower() for p in self.data[note].tag),
+                )
+                date_find = re.findall(pattern, self.data[note].date)
+                if (
+                    len(note_find) > 0
+                    or len(title_find) > 0
+                    or len(tag_find) > 0
+                    or len(date_find) > 0
+                ):
+                    result.append(self.data[note])
                 else:
-                    return result[0]
+                    continue
+            if len(result) > 1:
+                return result
+            elif len(result) == 1:
+                return result[0]
+            else:
+                return []
         else:
             raise ValueError("Search word schud have at least 3 characters")
+
+    def find_note_by_tag(self, tag):
+        result = []
+        pattern = re.compile(tag)
+        for note in self.data:
+            tag_find = re.findall(
+                pattern, " ".join(p.text.lower() for p in self.data[note].tag)
+            )
+            if len(tag_find) > 0:
+                result.append(self.data[note])
+            else:
+                continue
+        if len(result) > 1:
+            return result
+        elif len(result) == 1:
+            return result[0]
+        else:
+            return []
+
+    def find_note_by_date(self, date):
+        result = []
+        if re.match(r"\d{2}.\d{2}.\d{4}", date):
+            pattern = re.compile(date)
+            for note in self.data:
+                if re.match(pattern, self.data[note].date):
+                    result.append(self.data[note])
+        else:
+            return "Date schould be in format DD.MM.YYYY"
+        if len(result) > 1:
+            return result
+        elif len(result) == 1:
+            return result[0]
+        else:
+            return []
 
     def get_note_by_id(self, id):
         for note in self.data:
@@ -214,13 +234,17 @@ class NoteData(UserDict):
                 break
         return result if result is not None else None
 
-    def sort_note_by_tag(self):
+    def sort_note_by_tag_amount(self, reverse=False):
         result = []
+        result_dict = {}
         dict_data = self.to_dict()
         for d in dict_data:
-            d["tag"] = [", ".join(p for p in d["tag"].split(","))]
+            d["tag"] = d["tag"].split(",")
             result.append(d)
-        return result
+        sorted_list = sorted(result, key=lambda d: len(d["tag"]), reverse=reverse)
+        for r in sorted_list:
+            result_dict[r["title"]] = self.get_note_by_id(r["id"])
+        return result_dict
 
     def to_dict(self, obj=None):
         result = []
@@ -358,9 +382,9 @@ if __name__ == "__main__":
 
     # Of course, it could be edited in another way by using a different search options,
     # but you must be careful since such a search method may return a list.
-    print(notebook.find_note("Almost election."))
-    notebook.delete("Almost election.")  # delete the record
-    print(notebook.find_note("Almost election."))
+    print(notebook.find_note("Pull bank artist."))    
+    notebook.delete("Pull bank artist.")  # delete the record
+    print(notebook.find_note("Pull bank artist."))
 
     # returns all data as a list of dict
     second_find = notebook.find_note("200")
@@ -386,9 +410,29 @@ if __name__ == "__main__":
     print(one_find)
 
     print(notebook.get_id_list())
-    print(notebook.sort_note_by_tag())
+
     print("Hier ist the full list: \n")
     for name, record in notebook.data.items():
         print(str(record) + "\n")
 
+    # to sort data by tags amount (default (reverse = False) -> from less to more)
+    sorted_dict = notebook.sort_note_by_tag_amount(True)
+    for name, record in sorted_dict.items():
+        print(str(record) + "\n")
+
+    # to find notes or note by tag
+    tag_find = notebook.find_note_by_tag("koliu")
+    if isinstance(tag_find, list):
+        for record in tag_find:
+            print(str(record) + "\n")
+    else:
+        print(tag_find)
+
+    # to find note by date. Date schould be in format DD.MM.YYYY
+    date_find = notebook.find_note_by_date("12.02.1994")
+    if isinstance(date_find, list):
+        for record in date_find:
+            print(str(record) + "\n")
+    else:
+        print(date_find)
 #    notebook.write_csv_file("fake_note_1.csv")
